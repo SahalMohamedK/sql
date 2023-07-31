@@ -1,0 +1,112 @@
+create table "user" (
+	"id" uuid not null primary key default uuid_generate_v4(),
+	"email" character varying not null,
+	"password" character varying not null,
+	"name" character varying not null,
+	"address" character varying,
+	"phone_number" character varying not null
+);
+
+create table "product" (
+	"id" uuid not null primary key default uuid_generate_v4(),
+	"name" character varying not null,
+	"description" character varying,
+	"sku" uuid not null default uuid_generate_v4(),
+	"price" float not null
+);
+
+create table "category" (
+	"id" uuid not null primary key default uuid_generate_v4(),
+	"name" character varying not null
+)
+
+create table "prodct_category" (
+	"product_id" uuid not null,
+	"category_id" uuid not null
+);
+
+create table "order" (
+	"id" uuid not null primary key default uuid_generate_v4(),
+	"address" character varying not null
+);
+
+create table "user_order" (
+	"user_id" uuid not null,
+	"order_id" uuid not null
+);
+
+create table "product_order" (
+	"product_id" uuid not null,
+	"order_id" uuid not null
+);
+
+alter table "order" add column "quantity" integer not null;
+
+insert into "product"
+	("name", "description", "price")
+values
+	('Watch', 'OLED smart watch', 5000),
+	('Phone', '128 gb rom, 8gb ram', 25000),
+	('Bottle', '1.5L capacity', 500),
+	('Key board', 'White color', 1200),
+	('Lays', 'Salt flavour', 10);
+
+alter table "order" alter column "total" drop not null;
+
+insert into "product_order"
+	("product_id", "order_id", "quantity")
+values
+	('51855a78-98cd-4485-8a46-09f30b116f1f', '6cd1a4e0-66af-46e7-9a41-5f6ac41f00a9', 1),
+	('7ed8ef33-1983-4419-9782-bb7a219b9073', '6cd1a4e0-66af-46e7-9a41-5f6ac41f00a9', 1),
+	('252a5c30-fd4d-4c70-80e2-924df151536b', 'f918504e-c435-4779-88e8-2f71b33ab9c5', 5),
+	('446df7d8-4e83-41c8-a2d0-ac76d9280528', 'bc40688d-08ea-4e07-b054-55d90b31d6ed', 1),
+	('51855a78-98cd-4485-8a46-09f30b116f1f', 'aa7cdf63-cd46-498c-a343-e03390007b34', 1),
+	('7ed8ef33-1983-4419-9782-bb7a219b9073', '6987bdd5-ae75-4927-88ae-0c4f724568a1', 1),
+	('4332ba68-78dd-43e3-8a3a-3a67058a38d5', '6987bdd5-ae75-4927-88ae-0c4f724568a1', 1);
+
+update 
+
+select * from "order";
+
+select u.name, p.name, o.id, o.total from "order" o 
+	left join "product_order" po on po.order_id = o.id
+	left join "product" p on p.id = po.product_id
+	left join "user" u on u.id = o.user_id;
+
+drop table user_order;
+
+truncate table "order";
+
+alter table "order" add column "user_id" uuid not null;
+
+insert into "order"
+	("address", "user_id")
+values
+	('KeyValue systems', 'e38bcd90-35a1-4c16-b13f-52ead2a1dc9c'),
+	('KeyValue systems', 'e38bcd90-35a1-4c16-b13f-52ead2a1dc9c'),
+	('KeyValue systems', 'e38bcd90-35a1-4c16-b13f-52ead2a1dc9c'),
+	('KeyValue systems', '2c037efd-b73f-44b1-b799-8a833d4bf2e7'),
+	('KeyValue systems', 'b0466ff7-2a44-49a4-99cf-3559d69410f8');
+
+update "order" set 
+	"total" = a.total
+from 
+	(select po.order_id as order_id, sum(p.price*po.quantity) as total from "product_order" po inner join "product" p on p.id = po.product_id group by po.order_id) a 
+where "id" =  a.order_id;
+
+
+
+insert into "category" 
+	("name")
+values
+	('Utilities');
+
+truncate table "category";
+
+insert into "product_category"
+	("product_id", "category_id")
+values
+	('7ed8ef33-1983-4419-9782-bb7a219b9073', '861af516-7c3a-4ffe-9d8d-fc1a0600ef4d'),
+	('7ed8ef33-1983-4419-9782-bb7a219b9073'),
+	('', ''),
+	('', ''),;
